@@ -842,6 +842,7 @@ function renderManageCourses(){
     <div style="font-size:20px;font-weight:900">⚙️ Gerenciar Cursos</div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" onclick="openAICreateCourse()">✨ Criar com IA</button>
+      <button class="btn btn-ghost" onclick="openWeeklyChallengeCreator()">🏆 Desafio Semanal</button>
       <button class="btn btn-primary" onclick="openCreateCourse()">+ Novo Curso</button>
     </div>
   </div>
@@ -1646,6 +1647,76 @@ async function loadNotifications(){
     const badge=document.getElementById('notif-badge');
     if(badge){badge.textContent=pendingTasks.length;badge.style.display=pendingTasks.length?'flex':'none';}
   } catch(e){}
+}
+
+function openWeeklyChallengeCreator(){
+  showModal(`
+    <div class="modal-title">🏆 Desafio Semanal <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--tx3);margin-bottom:14px">Crie um desafio prático para os AMs realizarem essa semana com clientes reais.</p>
+    <div class="fg"><label class="flbl">Produto da semana</label>
+      <select class="sel" id="wc-prod">
+        ${['Zoho CRM','Zoho CRM Plus','Zoho Desk','Zoho Workplace','Zoho SalesIQ','Zoho Analytics','Zoho Flow','Zoho Creator','Zoho One'].map(p=>`<option>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flbl">Tipo de desafio</label>
+      <select class="sel" id="wc-tipo">
+        <option>Demo para cliente real (15 min)</option>
+        <option>Identificar 3 oportunidades de cross-sell</option>
+        <option>Gravar mini-pitch de 2 minutos</option>
+        <option>Apresentar proposta comparativa</option>
+        <option>Conduzir discovery em conta estratégica</option>
+      </select>
+    </div>
+    <div class="fg"><label class="flbl">Prazo</label><input class="inp" type="date" id="wc-prazo"></div>
+    <div class="fg"><label class="flbl">Critério de sucesso</label>
+      <input class="inp" id="wc-criterio" placeholder="Ex: AM envia print do CRM após a demo"></div>
+    <div id="wc-out" style="display:none;margin-top:10px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="generateWeeklyChallenge()">✨ Gerar e distribuir</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+}
+
+async function generateWeeklyChallenge(){
+  const prod=document.getElementById('wc-prod')?.value||'Zoho CRM';
+  const tipo=document.getElementById('wc-tipo')?.value||'Demo';
+  const prazo=document.getElementById('wc-prazo')?.value||'';
+  const criterio=document.getElementById('wc-criterio')?.value||'';
+  const out=document.getElementById('wc-out');
+  if(out){out.style.display='block';out.innerHTML='<div class="ldg"><div class="ld"></div> Gerando desafio...</div>';}
+
+  // Get all AMs
+  const users=await apiFetch('/api/users').catch(()=>[]);
+  const ams=users.filter(u=>u.role==='AM');
+
+  // Create a course with the challenge
+  const saved=await apiFetch('/api/courses',{method:'POST',body:{
+    title:`🏆 Desafio da Semana — ${prod}`,
+    description:`${tipo} com ${prod}. ${criterio?'Critério: '+criterio:''}`,
+    thumbnail_url:'🏆',
+    produto:prod,
+    status:'publicado',
+    created_by:U.name,
+  }});
+
+  if(saved?.id){
+    // Create a single challenge lesson
+    const lesson=await apiFetch('/api/lessons',{method:'POST',body:{
+      course_id:saved.id,
+      title:tipo,
+      tipo:'tarefa',
+      content:`# 🏆 Desafio: ${tipo}\n\n**Produto:** ${prod}\n\n**Missão desta semana:**\n${tipo}\n\n**Como concluir:**\n${criterio||'Realize o desafio e marque como concluído.'}\n\n${prazo?'**Prazo:** '+new Date(prazo).toLocaleDateString('pt-BR'):''}\n\n**Pontuação:** +30pts ao concluir 🎯`,
+      duration_min:30,
+      points:30,
+      ordem:0,
+    }});
+
+    ALL_COURSES=await apiFetch('/api/courses');
+    loadManageCourses();
+    if(out)out.innerHTML=`<div style="background:var(--tdim);border-radius:8px;padding:10px;color:var(--teal);font-size:13px;font-weight:600">✅ Desafio criado e publicado para ${ams.length} AMs!</div>`;
+    setTimeout(closeModal,2000);
+    toast('🏆 Desafio da semana publicado!','teal');
+  }
 }
 
 function closeModal(){const m=document.getElementById('modal-bg');if(m)m.remove();}

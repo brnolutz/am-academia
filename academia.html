@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Academia AM — Zoho Brasil</title>
+<style>
+:root{
+  --bg:#0d0f1a;--s1:#131627;--s2:#1a1e35;--s3:#222744;--s4:#2a3050;
+  --b1:rgba(255,255,255,.08);--b2:rgba(255,255,255,.14);
+  --tx:#e8eaf6;--tx2:#b0b8d8;--tx3:#6b7499;
+  --blue:#4f6ef7;--blue2:#7b93ff;--teal:#06c5a0;--amb:#f6a91c;
+  --rose:#f0466e;--vio:#8b5cf6;--grn:#22c55e;
+  --bdim:rgba(79,110,247,.12);--tdim:rgba(6,197,160,.1);
+  --adim:rgba(246,169,28,.1);--rdim:rgba(240,70,110,.1);--vdim:rgba(139,92,246,.1);
+  --r:14px;--shadow:0 4px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+/* AUTH */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,rgba(79,110,247,.15),transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(6,197,160,.1),transparent 60%),var(--bg);}
+.auth-box{background:var(--s1);border:1px solid var(--b1);border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:var(--shadow);}
+.auth-logo{text-align:center;margin-bottom:28px;}
+.auth-logo .name{font-size:26px;font-weight:900;background:linear-gradient(135deg,var(--blue2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-logo .sub{font-size:11px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.fi{width:100%;padding:11px 14px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;color:var(--tx);font-size:13px;outline:none;margin-bottom:10px;transition:border .2s;}
+.fi:focus{border-color:var(--blue);}
+.btn-main{width:100%;padding:12px;background:linear-gradient(135deg,var(--blue),var(--vio));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.btn-main:hover{opacity:.9;}
+.btn-main:disabled{opacity:.5;cursor:default;}
+.auth-err{background:var(--rdim);color:var(--rose);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:8px;display:none;}
+.auth-link{text-align:center;margin-top:12px;font-size:12px;color:var(--tx3);}
+.auth-link span{color:var(--blue2);cursor:pointer;text-decoration:underline;}
+/* APP */
+#app{display:none;min-height:100vh;}
+.topbar{position:fixed;top:0;left:0;right:0;height:54px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 20px;gap:12px;z-index:100;}
+.topbar .logo{font-size:16px;font-weight:900;background:linear-gradient(135deg,var(--blue2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar .sub{font-size:11px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;}
+.topbar .spacer{flex:1;}
+.topbar .user-pill{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:20px;padding:5px 12px 5px 5px;cursor:pointer;}
+.av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--vio));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.main{margin-top:54px;display:flex;min-height:calc(100vh - 54px);}
+.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--b1);padding:16px 0;position:fixed;top:54px;left:0;bottom:0;overflow-y:auto;}
+.sidebar-section{padding:0 12px;margin-bottom:4px;}
+.sidebar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);padding:8px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--tx2);transition:all .15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--s2);color:var(--tx);}
+.nav-item.active{background:var(--bdim);color:var(--blue2);font-weight:700;}
+.nav-item .ni-icon{font-size:16px;flex-shrink:0;}
+.content{margin-left:220px;flex:1;padding:24px;max-width:1100px;}
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+/* KPI */
+.kpi{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:16px;text-align:center;}
+.kpi-val{font-size:28px;font-weight:900;line-height:1;}
+.kpi-lbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.6px;margin-top:4px;}
+/* COURSE CARD */
+.course-card{background:var(--s2);border:1px solid var(--b1);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.course-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,110,247,.15);}
+.course-thumb{height:90px;background:linear-gradient(135deg,var(--blue),var(--vio));display:flex;align-items:center;justify-content:center;font-size:2.5rem;}
+.course-body{padding:14px;}
+.course-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.course-meta{font-size:11px;color:var(--tx3);}
+.course-prog{height:4px;background:var(--s3);border-radius:2px;margin-top:10px;overflow:hidden;}
+.course-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:2px;transition:width .4s;}
+/* LESSON */
+.lesson-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.lesson-item:hover{background:var(--s2);}
+.lesson-item.active{background:var(--bdim);border-color:rgba(79,110,247,.3);}
+.lesson-item.done{opacity:.7;}
+.lesson-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.lesson-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s;}
+.lesson-check.done{background:var(--teal);border-color:var(--teal);color:#000;}
+/* LESSON VIEWER */
+.lesson-viewer{background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:24px;min-height:300px;}
+.video-embed{width:100%;aspect-ratio:16/9;border-radius:10px;background:#000;border:none;margin-bottom:16px;}
+/* QUIZ */
+.quiz-opt{display:block;width:100%;text-align:left;padding:11px 14px;border-radius:8px;border:1px solid var(--b1);background:var(--s3);color:var(--tx);font-size:13px;cursor:pointer;margin-bottom:7px;transition:all .2s;font-family:inherit;}
+.quiz-opt:hover:not(:disabled){border-color:var(--blue2);background:var(--bdim);}
+.quiz-opt:disabled{cursor:default;}
+.quiz-opt.correct{background:rgba(6,197,160,.15);border-color:var(--teal);color:var(--teal);font-weight:700;}
+.quiz-opt.wrong{background:rgba(240,70,110,.15);border-color:var(--rose);color:var(--rose);}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.badge-blue{background:var(--bdim);color:var(--blue2);}
+.badge-teal{background:var(--tdim);color:var(--teal);}
+.badge-amb{background:var(--adim);color:var(--amb);}
+.badge-rose{background:var(--rdim);color:var(--rose);}
+.badge-vio{background:var(--vdim);color:var(--vio);}
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{opacity:.85;}
+.btn-ghost{background:var(--s2);color:var(--tx2);border:1px solid var(--b1);}
+.btn-ghost:hover{background:var(--s3);color:var(--tx);}
+.btn-danger{background:var(--rdim);color:var(--rose);border:1px solid rgba(240,70,110,.3);}
+.btn-teal{background:var(--tdim);color:var(--teal);border:1px solid rgba(6,197,160,.3);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+/* FORM */
+.fg{margin-bottom:12px;}
+.flbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);margin-bottom:4px;}
+.inp{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-size:13px;outline:none;transition:border .2s;}
+.inp:focus{border-color:var(--blue);}
+.ta{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-size:13px;outline:none;resize:vertical;min-height:80px;font-family:inherit;}
+.sel{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-size:13px;outline:none;cursor:pointer;}
+/* PROGRESS BAR */
+.pb{height:6px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.pf{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:3px;transition:width .5s;}
+/* LOADING */
+.ld{width:18px;height:18px;border:2px solid var(--b2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldg{display:flex;align-items:center;gap:8px;color:var(--tx3);font-size:13px;padding:20px 0;}
+/* MARKDOWN */
+.aitxt h1,.aitxt h2,.aitxt h3{margin:12px 0 6px;font-weight:800;}
+.aitxt h1{font-size:16px;color:var(--tx);}
+.aitxt h2{font-size:14px;color:var(--blue2);}
+.aitxt h3{font-size:13px;color:var(--tx);}
+.aitxt strong{color:var(--tx);font-weight:700;}
+.aitxt p{margin-bottom:8px;line-height:1.6;}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:24px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s;z-index:90;}
+  .sidebar.open{transform:none;}
+  .content{margin-left:0;}
+  .grid2,.grid3{grid-template-columns:1fr;}
+}
+/* TOAST */
+.toast{position:fixed;top:20px;right:20px;padding:10px 18px;border-radius:10px;font-weight:700;font-size:13px;z-index:9999;animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="name">🎓 Academia AM</div>
+      <div class="sub">Zoho Brasil · Treinamento</div>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <div id="auth-form">
+      <label class="flbl">E-mail corporativo</label>
+      <input class="fi" id="li-email" type="email" placeholder="seu@zohocorp.com" onkeydown="if(event.key==='Enter')doLogin()">
+      <label class="flbl">Senha</label>
+      <input class="fi" id="li-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn-main" id="login-btn" onclick="doLogin()">Entrar na Academia</button>
+      <div class="auth-link">Primeiro acesso? <span onclick="showRegister()">Criar conta</span></div>
+      <div class="auth-link"><span onclick="showReset()">Esqueci minha senha</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo">🎓 Academia AM</div>
+    <div class="sub">Zoho Brasil</div>
+    <div class="spacer"></div>
+    <div id="role-badge" class="badge badge-blue"></div>
+    <div class="user-pill" onclick="logout()">
+      <div class="av" id="av">BL</div>
+      <span id="av-name" style="font-size:13px;font-weight:600">Bruno</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Meu aprendizado</div>
+        <div class="nav-item active" onclick="nav('home')" id="ni-home"><span class="ni-icon">🏠</span> Início</div>
+        <div class="nav-item" onclick="nav('my-courses')" id="ni-my-courses"><span class="ni-icon">📚</span> Meus Cursos</div>
+        <div class="nav-item" onclick="nav('my-progress')" id="ni-my-progress"><span class="ni-icon">📈</span> Meu Progresso</div>
+        <div class="nav-item" onclick="nav('ranking')" id="ni-ranking"><span class="ni-icon">🏆</span> Ranking</div>
+      </div>
+      <div class="sidebar-section" id="admin-nav" style="display:none">
+        <div class="sidebar-label">Administração (TAM)</div>
+        <div class="nav-item" onclick="nav('manage-courses')" id="ni-manage-courses"><span class="ni-icon">⚙️</span> Gerenciar Cursos</div>
+        <div class="nav-item" onclick="nav('team-progress')" id="ni-team-progress"><span class="ni-icon">👥</span> Progresso do Time</div>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <div class="ldg"><div class="ld"></div> Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = window.location.origin;
+let U = { name:'', email:'', role:'AM', initials:'AM' };
+let ALL_COURSES = [];
+let MY_ENROLLMENTS = [];
+let MY_PROGRESS = [];
+
+// ============================================================
+// AUTH
+// ============================================================
+function showErr(msg){ const e=document.getElementById('auth-err');if(e){e.textContent=msg;e.style.display='block';} }
+function hideErr(){ const e=document.getElementById('auth-err');if(e)e.style.display='none'; }
+
+function showRegister(){
+  document.getElementById('auth-form').innerHTML=`
+    <label class="flbl">Nome completo</label>
+    <input class="fi" id="rg-name" placeholder="Seu nome">
+    <label class="flbl">E-mail</label>
+    <input class="fi" id="rg-email" type="email" placeholder="seu@email.com">
+    <label class="flbl">Senha</label>
+    <input class="fi" id="rg-pass" type="password" placeholder="Mínimo 4 caracteres">
+    <label class="flbl">Papel</label>
+    <select class="fi" id="rg-role" style="cursor:pointer">
+      <option value="AM">AM — Account Manager</option>
+      <option value="TAM">TAM / SE-AM</option>
+      <option value="CS">Customer Success</option>
+    </select>
+    <button class="btn-main" onclick="doRegister()">Criar conta</button>
+    <div class="auth-link"><span onclick="location.reload()">← Voltar para login</span></div>`;
+}
+
+function showReset(){
+  document.getElementById('auth-form').innerHTML=`
+    <label class="flbl">E-mail cadastrado</label>
+    <input class="fi" id="rst-email" type="email" placeholder="seu@email.com">
+    <label class="flbl">Nova senha</label>
+    <input class="fi" id="rst-pass" type="password" placeholder="Mínimo 4 caracteres">
+    <label class="flbl">Confirmar senha</label>
+    <input class="fi" id="rst-pass2" type="password" placeholder="Repita">
+    <button class="btn-main" onclick="doReset()">Redefinir senha</button>
+    <div class="auth-link"><span onclick="location.reload()">← Voltar</span></div>`;
+}
+
+async function doLogin(){
+  hideErr();
+  const email=(document.getElementById('li-email')?.value||'').trim().toLowerCase();
+  const pass=document.getElementById('li-pass')?.value||'';
+  if(!email){showErr('Informe seu e-mail.');return;}
+  if(!pass){showErr('Informe sua senha.');return;}
+  const btn=document.getElementById('login-btn');
+  if(btn){btn.textContent='Verificando...';btn.disabled=true;}
+  try {
+    const users=await apiFetch('/api/users');
+    const found=users.find(u=>u.email?.toLowerCase()===email);
+    if(!found){showErr('E-mail não encontrado. Clique em "Criar conta".');if(btn){btn.textContent='Entrar na Academia';btn.disabled=false;}return;}
+    const allData=await apiFetch('/api/data').catch(()=>({}));
+    const pwMap=allData.passwords||{};
+    const key=found.id||found.email;
+    const stored=pwMap[key];
+    if(stored&&stored!==pass){showErr('Senha incorreta.');if(btn){btn.textContent='Entrar na Academia';btn.disabled=false;}return;}
+    if(!stored&&pass){
+      pwMap[key]=pass;
+      await apiFetch('/api/data',{method:'POST',body:{passwords:pwMap}}).catch(()=>{});
+    }
+    U={name:found.name,email:found.email,role:found.role||'AM',id:found.id,initials:found.name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()};
+    launch();
+  } catch(e){showErr('Erro de conexão: '+e.message);}
+  if(btn){btn.textContent='Entrar na Academia';btn.disabled=false;}
+}
+
+async function doRegister(){
+  hideErr();
+  const name=(document.getElementById('rg-name')?.value||'').trim();
+  const email=(document.getElementById('rg-email')?.value||'').trim().toLowerCase();
+  const pass=document.getElementById('rg-pass')?.value||'';
+  const role=document.getElementById('rg-role')?.value||'AM';
+  if(!name||!email||!pass){showErr('Preencha todos os campos.');return;}
+  if(pass.length<4){showErr('Senha muito curta.');return;}
+  try {
+    const users=await apiFetch('/api/users');
+    if(users.find(u=>u.email?.toLowerCase()===email)){showErr('E-mail já cadastrado.');return;}
+    const created=await apiFetch('/api/users',{method:'POST',body:{name,email,role}});
+    const allData=await apiFetch('/api/data').catch(()=>({}));
+    const pwMap=allData.passwords||{};
+    pwMap[(created[0]||created)?.id||email]=pass;
+    await apiFetch('/api/data',{method:'POST',body:{passwords:pwMap}}).catch(()=>{});
+    const u=Array.isArray(created)?created[0]:created;
+    U={name:u.name,email:u.email,role:u.role||'AM',id:u.id,initials:u.name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()};
+    launch();
+  } catch(e){showErr('Erro: '+e.message);}
+}
+
+async function doReset(){
+  hideErr();
+  const email=(document.getElementById('rst-email')?.value||'').trim().toLowerCase();
+  const pass=document.getElementById('rst-pass')?.value||'';
+  const pass2=document.getElementById('rst-pass2')?.value||'';
+  if(!email||!pass){showErr('Preencha todos os campos.');return;}
+  if(pass!==pass2){showErr('Senhas não conferem.');return;}
+  if(pass.length<4){showErr('Senha muito curta.');return;}
+  try {
+    const users=await apiFetch('/api/users');
+    const found=users.find(u=>u.email?.toLowerCase()===email);
+    if(!found){showErr('E-mail não encontrado.');return;}
+    const allData=await apiFetch('/api/data').catch(()=>({}));
+    const pwMap=allData.passwords||{};
+    pwMap[found.id||found.email]=pass;
+    await apiFetch('/api/data',{method:'POST',body:{passwords:pwMap}});
+    document.getElementById('auth-form').innerHTML=`<div style="text-align:center;padding:20px 0"><div style="font-size:2rem;margin-bottom:10px">✅</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">Senha atualizada!</div><button class="btn-main" onclick="location.reload()">Ir para login</button></div>`;
+  } catch(e){showErr('Erro: '+e.message);}
+}
+
+function logout(){ location.reload(); }
+
+async function launch(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('av').textContent=U.initials;
+  document.getElementById('av-name').textContent=U.name.split(' ')[0];
+  document.getElementById('role-badge').textContent=U.role;
+  document.getElementById('role-badge').className='badge '+(U.role==='TAM'?'badge-vio':U.role==='CS'?'badge-teal':'badge-blue');
+  if(U.role==='TAM'||U.role==='Admin'){
+    document.getElementById('admin-nav').style.display='block';
+  }
+  await loadData();
+  nav('home');
+}
+
+// ============================================================
+// API
+// ============================================================
+async function apiFetch(path, opts={}){
+  const r=await fetch(API_URL+path,{
+    method:opts.method||'GET',
+    headers:{'Content-Type':'application/json'},
+    ...(opts.body?{body:JSON.stringify(opts.body)}:{})
+  });
+  if(!r.ok)throw new Error('API '+path+' failed: '+r.status);
+  return r.json();
+}
+
+async function loadData(){
+  try {
+    [ALL_COURSES, MY_ENROLLMENTS, MY_PROGRESS] = await Promise.all([
+      apiFetch('/api/courses').catch(()=>[]),
+      apiFetch('/api/enrollments?am='+encodeURIComponent(U.name)).catch(()=>[]),
+      apiFetch('/api/progress?am='+encodeURIComponent(U.name)).catch(()=>[]),
+    ]);
+  } catch(e){ console.error('loadData:', e); }
+}
+
+function getEnrollment(courseId){ return MY_ENROLLMENTS.find(e=>e.course_id===courseId); }
+function getCoursePct(courseId){ const e=getEnrollment(courseId);return e?e.progress_pct||0:0; }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nav(page){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const ni=document.getElementById('ni-'+page);if(ni)ni.classList.add('active');
+  const c=document.getElementById('content');
+  switch(page){
+    case 'home': c.innerHTML=renderHome();break;
+    case 'my-courses': c.innerHTML=renderMyCourses();break;
+    case 'my-progress': c.innerHTML=renderMyProgress();break;
+    case 'ranking': renderRanking();break;
+    case 'manage-courses': c.innerHTML=renderManageCourses();loadManageCourses();break;
+    case 'team-progress': renderTeamProgress();break;
+  }
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome(){
+  const enrolled=MY_ENROLLMENTS.length;
+  const done=MY_ENROLLMENTS.filter(e=>e.status==='concluido').length;
+  const totalPts=MY_ENROLLMENTS.reduce((s,e)=>s+(e.total_points||0),0);
+  const level=totalPts>=300?'🥇 Expert':totalPts>=150?'🥈 Avançado':totalPts>=60?'🥉 Intermediário':'🌱 Iniciante';
+  const inProgress=MY_ENROLLMENTS.filter(e=>e.status==='em_andamento').slice(0,3);
+
+  return `
+  <div style="margin-bottom:24px">
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px">Olá, ${U.name.split(' ')[0]}! 👋</div>
+    <div style="font-size:13px;color:var(--tx3)">Pronto para aprender hoje?</div>
+  </div>
+
+  <div class="grid3" style="margin-bottom:24px">
+    <div class="kpi"><div class="kpi-val" style="color:var(--amb)">${totalPts}</div><div class="kpi-lbl">Pontos totais</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue2)">${level}</div><div class="kpi-lbl">Seu nível</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--teal)">${done}/${enrolled}</div><div class="kpi-lbl">Cursos concluídos</div></div>
+  </div>
+
+  ${inProgress.length>0?`
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">🔄 Continuar aprendendo</div>
+    ${inProgress.map(e=>{
+      const c=ALL_COURSES.find(x=>x.id===e.course_id);
+      if(!c)return '';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--s2);border-radius:10px;margin-bottom:8px;cursor:pointer" onclick="openCourse('${c.id}')">
+        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--vio));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📚</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${c.title}</div>
+          <div class="pb" style="margin-top:5px"><div class="pf" style="width:${e.progress_pct||0}%"></div></div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:3px">${e.progress_pct||0}% concluído</div>
+        </div>
+        <span class="btn btn-primary btn-sm">Continuar →</span>
+      </div>`;
+    }).join('')}
+  </div>`:''}
+
+  <div class="card">
+    <div class="card-title">📚 Catálogo de Cursos
+      <button class="btn btn-ghost btn-sm" onclick="nav('my-courses')">Ver todos</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+      ${ALL_COURSES.filter(c=>c.status==='publicado').slice(0,6).map(c=>{
+        const enr=getEnrollment(c.id);
+        const pct=enr?enr.progress_pct||0:0;
+        return `<div class="course-card" onclick="openCourse('${c.id}')">
+          <div class="course-thumb">${c.thumbnail_url||'📚'}</div>
+          <div class="course-body">
+            <div class="course-title">${c.title}</div>
+            <div class="course-meta">${c.produto||'Geral'}</div>
+            ${enr?`<div class="course-prog"><div class="course-prog-fill" style="width:${pct}%"></div></div>`:
+              `<span class="badge badge-blue" style="margin-top:8px">Iniciar</span>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// MY COURSES
+// ============================================================
+function renderMyCourses(){
+  const published=ALL_COURSES.filter(c=>c.status==='publicado');
+  return `
+  <div style="font-size:20px;font-weight:900;margin-bottom:20px">📚 Cursos Disponíveis</div>
+  ${published.length===0?'<div class="card" style="text-align:center;padding:32px;color:var(--tx3)">Nenhum curso publicado ainda.</div>':
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+      ${published.map(c=>{
+        const enr=getEnrollment(c.id);
+        const pct=enr?enr.progress_pct||0:0;
+        return `<div class="course-card" onclick="openCourse('${c.id}')">
+          <div class="course-thumb" style="background:linear-gradient(135deg,${courseColor(c.produto)});">${c.thumbnail_url||'📚'}</div>
+          <div class="course-body">
+            <div class="course-title">${c.title}</div>
+            <div class="course-meta">${c.produto||'Geral'} · ${c.description?c.description.substring(0,60)+'...':''}</div>
+            ${enr?`<div class="course-prog" style="margin-top:8px"><div class="course-prog-fill" style="width:${pct}%"></div></div>
+              <div style="font-size:10px;color:var(--tx3);margin-top:3px">${pct}% · ${enr.total_points||0}pts</div>`:
+              `<span class="badge badge-blue" style="margin-top:8px;display:inline-flex">📖 Iniciar</span>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}`;
+}
+
+function courseColor(prod){
+  const map={'Zoho CRM':'#e34747,#b03030','Zoho Desk':'#0073e6,#0052a3','Zoho Workplace':'#6b21a8,#4a0e7a','Zoho SalesIQ':'#0ea5e9,#0284c7','Zoho Analytics':'#16a34a,#166534','Zoho One':'#b45309,#92400e'};
+  return map[prod]||'#4f6ef7,#7c3aed';
+}
+
+// ============================================================
+// COURSE VIEWER
+// ============================================================
+let currentCourse=null;let currentLesson=null;let courseLessons=[];let courseModules=[];
+
+async function openCourse(courseId){
+  const c=document.getElementById('content');
+  c.innerHTML='<div class="ldg"><div class="ld"></div> Carregando curso...</div>';
+
+  const [course, modules, lessons] = await Promise.all([
+    apiFetch('/api/courses/'+courseId),
+    apiFetch('/api/modules?course_id='+courseId),
+    apiFetch('/api/lessons?course_id='+courseId)
+  ]);
+
+  currentCourse=course;courseModules=modules;courseLessons=lessons;
+
+  // Auto-enroll
+  if(!getEnrollment(courseId)){
+    const enr=await apiFetch('/api/enrollments',{method:'POST',body:{am_name:U.name,am_email:U.email,course_id:courseId,status:'em_andamento'}});
+    MY_ENROLLMENTS.push(enr);
+  }
+
+  renderCourseViewer();
+  // Open first incomplete lesson
+  const firstIncomplete=lessons.find(l=>!MY_PROGRESS.find(p=>p.lesson_id===l.id&&p.done));
+  if(firstIncomplete) openLesson(firstIncomplete.id);
+  else if(lessons[0]) openLesson(lessons[0].id);
+}
+
+function renderCourseViewer(){
+  const c=document.getElementById('content');
+  const enr=getEnrollment(currentCourse.id);
+  const pct=enr?enr.progress_pct||0:0;
+
+  const moduleHtml=courseModules.map(mod=>{
+    const modLessons=courseLessons.filter(l=>l.module_id===mod.id).sort((a,b)=>a.ordem-b.ordem);
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:8px">${mod.title}</div>
+      ${modLessons.map(l=>lessonItem(l)).join('')}
+    </div>`;
+  }).join('');
+
+  // Lessons without module
+  const noMod=courseLessons.filter(l=>!l.module_id||!courseModules.find(m=>m.id===l.module_id)).sort((a,b)=>a.ordem-b.ordem);
+  const noModHtml=noMod.length?noMod.map(l=>lessonItem(l)).join(''):'';
+
+  c.innerHTML=`
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" onclick="nav('my-courses')">← Voltar</button>
+    <div>
+      <div style="font-size:18px;font-weight:900">${currentCourse.title}</div>
+      <div style="font-size:12px;color:var(--tx3)">${currentCourse.produto||'Geral'} · ${courseLessons.length} lições</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:3px">${pct}% concluído</div>
+      <div class="pb" style="width:120px"><div class="pf" style="width:${pct}%"></div></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start">
+    <div>
+      <div class="card" style="padding:14px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px">Conteúdo do Curso</div>
+        ${moduleHtml}${noModHtml}
+      </div>
+    </div>
+    <div id="lesson-viewer">
+      <div class="card" style="text-align:center;padding:40px;color:var(--tx3)">
+        <div style="font-size:2rem;margin-bottom:10px">👈</div>
+        Selecione uma lição ao lado
+      </div>
+    </div>
+  </div>`;
+}
+
+function lessonItem(l){
+  const done=MY_PROGRESS.find(p=>p.lesson_id===l.id&&p.done);
+  const active=currentLesson?.id===l.id;
+  const icons={'video':'🎥','quiz':'🎮','texto':'📝','tarefa':'✅','dinamica':'🎭','link':'🔗'};
+  return `<div class="lesson-item${active?' active':''}${done?' done':''}" onclick="openLesson('${l.id}')">
+    <div class="lesson-check${done?' done':''}">${done?'✓':''}</div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:${active?'700':'600'};color:${active?'var(--blue2)':'var(--tx)'}">${l.title}</div>
+      <div style="font-size:10px;color:var(--tx3)">${icons[l.tipo]||'📝'} ${l.tipo} · ${l.duration_min||5}min · ${l.points||10}pts</div>
+    </div>
+  </div>`;
+}
+
+async function openLesson(lessonId){
+  currentLesson=courseLessons.find(l=>l.id===lessonId);
+  if(!currentLesson)return;
+  // Re-render sidebar to show active
+  renderCourseViewer();
+  // Reopen lesson
+  currentLesson=courseLessons.find(l=>l.id===lessonId);
+
+  const viewer=document.getElementById('lesson-viewer');
+  if(!viewer)return;
+
+  // Load quiz questions if quiz type
+  let questions=[];
+  if(currentLesson.tipo==='quiz'){
+    questions=await apiFetch('/api/questions?lesson_id='+lessonId).catch(()=>[]);
+  }
+
+  const isDone=MY_PROGRESS.find(p=>p.lesson_id===lessonId&&p.done);
+  viewer.innerHTML=renderLessonContent(currentLesson, questions, isDone);
+}
+
+function renderLessonContent(lesson, questions, isDone){
+  const typeIcons={'video':'🎥','quiz':'🎮','texto':'📝','tarefa':'✅','dinamica':'🎭','link':'🔗'};
+
+  let body='';
+  if(lesson.tipo==='video'&&lesson.video_url){
+    const embedUrl=lesson.video_url.replace('watch?v=','embed/').replace('youtu.be/','www.youtube.com/embed/');
+    body=`<iframe class="video-embed" src="${embedUrl}" allowfullscreen></iframe>`;
+    if(lesson.content)body+=`<div class="aitxt" style="margin-top:12px">${mdRender(lesson.content)}</div>`;
+  } else if(lesson.tipo==='link'&&lesson.video_url){
+    body=`<div style="padding:20px;background:var(--s3);border-radius:10px;text-align:center;margin-bottom:16px">
+      <div style="font-size:1.5rem;margin-bottom:8px">🔗</div>
+      <div style="font-size:13px;margin-bottom:12px">Acesse o material externo</div>
+      <a href="${lesson.video_url}" target="_blank" class="btn btn-primary">Abrir material →</a>
+    </div>`;
+    if(lesson.content)body+=`<div class="aitxt">${mdRender(lesson.content)}</div>`;
+  } else if(lesson.tipo==='quiz'&&questions.length>0){
+    body=questions.map((q,qi)=>`
+      <div style="background:var(--s3);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">${qi+1}. ${q.question}</div>
+        <div id="quiz-q-${qi}">
+          ${[['A',q.option_a],['B',q.option_b],['C',q.option_c],['D',q.option_d]].filter(([,v])=>v).map(([l,v])=>`
+            <button class="quiz-opt" id="qopt-${qi}-${l}" onclick="answerQuiz(${qi},'${l}','${q.correct_answer}','${(q.explanation||'').replace(/'/g,"\\'")}','${q.id}')">
+              <strong>${l})</strong> ${v}
+            </button>`).join('')}
+        </div>
+        <div id="quiz-fb-${qi}" style="display:none;margin-top:8px;padding:10px;border-radius:8px;font-size:13px"></div>
+      </div>`).join('');
+    body+=`<div id="quiz-submit-area" style="margin-top:12px"></div>`;
+  } else {
+    body=`<div class="aitxt">${mdRender(lesson.content||'Sem conteúdo.')}</div>`;
+  }
+
+  return `<div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="font-size:1.5rem">${typeIcons[lesson.tipo]||'📝'}</div>
+      <div><div style="font-size:16px;font-weight:800">${lesson.title}</div>
+      <div style="font-size:11px;color:var(--tx3)">${lesson.tipo} · ${lesson.duration_min||5} min · ${lesson.points||10} pts</div></div>
+      ${isDone?'<span class="badge badge-teal" style="margin-left:auto">✓ Concluído</span>':''}
+    </div>
+    <div class="lesson-viewer">
+      ${body}
+    </div>
+    ${lesson.tipo!=='quiz'?`
+    <div style="margin-top:20px;display:flex;gap:8px">
+      ${!isDone?`<button class="btn btn-primary" onclick="markLessonDone('${lesson.id}',${lesson.points||10})">✅ Marcar como concluído (+${lesson.points||10}pts)</button>`:'<span class="badge badge-teal">✓ Concluído</span>'}
+      ${nextLesson()?`<button class="btn btn-ghost" onclick="openLesson('${nextLesson().id}')">Próxima lição →</button>`:''}
+    </div>`:''}
+  </div>`;
+}
+
+function nextLesson(){
+  if(!currentLesson)return null;
+  const idx=courseLessons.findIndex(l=>l.id===currentLesson.id);
+  return courseLessons[idx+1]||null;
+}
+
+let quizAnswers={};let quizScore=0;
+
+function answerQuiz(qi, chosen, correct, explanation, qId){
+  const isRight=chosen===correct;
+  if(quizAnswers[qi]!==undefined)return;
+  quizAnswers[qi]=chosen;
+  if(isRight)quizScore+=10;
+  // Update buttons
+  const container=document.getElementById('quiz-q-'+qi);
+  if(container){
+    container.querySelectorAll('.quiz-opt').forEach(btn=>{
+      const l=btn.querySelector('strong')?.textContent?.replace(')','').trim();
+      if(l===correct)btn.classList.add('correct');
+      else if(l===chosen&&!isRight)btn.classList.add('wrong');
+      btn.disabled=true;
+    });
+  }
+  const fb=document.getElementById('quiz-fb-'+qi);
+  if(fb){
+    fb.style.display='block';
+    fb.style.background=isRight?'rgba(6,197,160,.1)':'rgba(240,70,110,.1)';
+    fb.style.color=isRight?'var(--teal)':'var(--rose)';
+    fb.innerHTML=`<strong>${isRight?'✅ Correto! +10pts':'❌ Incorreto — resposta: '+correct}</strong>${explanation?' · '+explanation:''}`;
+    if(isRight){toast('+10pts 🎉','teal');}
+  }
+  // Check if all questions answered
+  const lesson=currentLesson;
+  const viewer=document.getElementById('lesson-viewer');
+  apiFetch('/api/questions?lesson_id='+lesson.id).then(qs=>{
+    if(Object.keys(quizAnswers).length>=qs.length){
+      const submitArea=document.getElementById('quiz-submit-area');
+      if(submitArea)submitArea.innerHTML=`
+        <div style="background:var(--bdim);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:18px;font-weight:900;color:var(--blue2);margin-bottom:4px">${quizScore}pts no quiz!</div>
+          <div style="font-size:12px;color:var(--tx3);margin-bottom:12px">${Object.values(quizAnswers).filter((a,i)=>a===qs[i]?.correct_answer).length}/${qs.length} corretas</div>
+          <button class="btn btn-primary" onclick="markLessonDone('${lesson.id}',${quizScore})">Concluir lição e salvar pontuação</button>
+          ${nextLesson()?`<button class="btn btn-ghost" style="margin-left:8px" onclick="openLesson('${nextLesson().id}')">Próxima →</button>`:''}
+        </div>`;
+    }
+  });
+}
+
+async function markLessonDone(lessonId, points){
+  try {
+    const prog=await apiFetch('/api/progress',{method:'POST',body:{
+      am_name:U.name,am_email:U.email,lesson_id:lessonId,
+      course_id:currentCourse?.id,done:true,score:points,
+      completed_at:new Date().toISOString()
+    }});
+    // Update local progress
+    const existing=MY_PROGRESS.findIndex(p=>p.lesson_id===lessonId);
+    if(existing>-1)MY_PROGRESS[existing]={...MY_PROGRESS[existing],done:true,score:points};
+    else MY_PROGRESS.push({lesson_id:lessonId,done:true,score:points});
+    // Update enrollment progress
+    if(currentCourse){
+      const done=MY_PROGRESS.filter(p=>p.done&&courseLessons.find(l=>l.id===p.lesson_id)).length;
+      const pct=courseLessons.length>0?Math.round(done/courseLessons.length*100):0;
+      const totalPts=MY_PROGRESS.filter(p=>p.done&&courseLessons.find(l=>l.id===p.lesson_id)).reduce((s,p)=>s+(p.score||0),0);
+      const enr=getEnrollment(currentCourse.id);
+      if(enr){
+        enr.progress_pct=pct;enr.total_points=totalPts;
+        if(pct>=100)enr.status='concluido';
+        await apiFetch('/api/enrollments',{method:'POST',body:{
+          am_name:U.name,am_email:U.email,course_id:currentCourse.id,
+          progress_pct:pct,total_points:totalPts,status:pct>=100?'concluido':'em_andamento',
+          ...(pct>=100?{completed_at:new Date().toISOString()}:{})
+        }});
+      }
+    }
+    toast('+'+points+'pts 🎉','teal');
+    quizAnswers={};quizScore=0;
+    openLesson(lessonId);
+  } catch(e){alert('Erro: '+e.message);}
+}
+
+// ============================================================
+// MY PROGRESS
+// ============================================================
+function renderMyProgress(){
+  const totalPts=MY_ENROLLMENTS.reduce((s,e)=>s+(e.total_points||0),0);
+  const done=MY_ENROLLMENTS.filter(e=>e.status==='concluido').length;
+  const level=totalPts>=300?'🥇 Expert':totalPts>=150?'🥈 Avançado':totalPts>=60?'🥉 Intermediário':'🌱 Iniciante';
+  const nextLevel=totalPts>=300?300:totalPts>=150?300:totalPts>=60?150:60;
+  const pct=Math.min(Math.round(totalPts/nextLevel*100),100);
+
+  return `
+  <div style="font-size:20px;font-weight:900;margin-bottom:20px">📈 Meu Progresso</div>
+  <div class="grid2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Nível atual</div>
+      <div style="text-align:center;padding:12px 0">
+        <div style="font-size:40px;font-weight:900;margin-bottom:8px">${totalPts}</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:16px">${level}</div>
+        <div style="font-size:12px;color:var(--tx3);margin-bottom:6px">Progresso para próximo nível</div>
+        <div class="pb"><div class="pf" style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${totalPts}/${nextLevel} pts</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Resumo</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--s2);border-radius:8px">
+          <span style="font-size:13px">Cursos matriculado</span>
+          <span style="font-weight:700;color:var(--blue2)">${MY_ENROLLMENTS.length}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--s2);border-radius:8px">
+          <span style="font-size:13px">Cursos concluídos</span>
+          <span style="font-weight:700;color:var(--teal)">${done}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--s2);border-radius:8px">
+          <span style="font-size:13px">Lições concluídas</span>
+          <span style="font-weight:700;color:var(--amb)">${MY_PROGRESS.filter(p=>p.done).length}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Detalhes por Curso</div>
+    ${MY_ENROLLMENTS.length===0?'<div style="color:var(--tx3);text-align:center;padding:20px">Nenhum curso iniciado ainda.</div>':
+      MY_ENROLLMENTS.map(e=>{
+        const c=ALL_COURSES.find(x=>x.id===e.course_id);
+        if(!c)return '';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border-radius:10px;margin-bottom:8px;cursor:pointer" onclick="openCourse('${e.course_id}')">
+          <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,${courseColor(c.produto)});display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📚</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700">${c.title}</div>
+            <div class="pb" style="margin:5px 0"><div class="pf" style="width:${e.progress_pct||0}%"></div></div>
+            <div style="font-size:11px;color:var(--tx3)">${e.progress_pct||0}% · ${e.total_points||0} pts</div>
+          </div>
+          <span class="badge ${e.status==='concluido'?'badge-teal':'badge-blue'}">${e.status==='concluido'?'✓ Concluído':'Em andamento'}</span>
+        </div>`;
+      }).join('')}
+  </div>`;
+}
+
+// ============================================================
+// RANKING
+// ============================================================
+async function renderRanking(){
+  const c=document.getElementById('content');
+  c.innerHTML='<div class="ldg"><div class="ld"></div> Carregando ranking...</div>';
+  try {
+    const allEnrollments=await apiFetch('/api/enrollments');
+    const users=await apiFetch('/api/users').catch(()=>[]);
+    // Group by AM
+    const byAM={};
+    allEnrollments.forEach(e=>{
+      if(!byAM[e.am_name])byAM[e.am_name]={name:e.am_name,pts:0,done:0,courses:0};
+      byAM[e.am_name].pts+=(e.total_points||0);
+      byAM[e.am_name].courses++;
+      if(e.status==='concluido')byAM[e.am_name].done++;
+    });
+    const sorted=Object.values(byAM).sort((a,b)=>b.pts-a.pts);
+    const medals=['🥇','🥈','🥉'];
+    c.innerHTML=`
+      <div style="font-size:20px;font-weight:900;margin-bottom:20px">🏆 Ranking do Time</div>
+      <div class="card">
+        ${sorted.length===0?'<div style="color:var(--tx3);text-align:center;padding:20px">Nenhuma pontuação ainda.</div>':
+          sorted.map((am,i)=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${am.name===U.name?'var(--bdim)':'var(--s2)'};border-radius:10px;margin-bottom:8px;border:1px solid ${am.name===U.name?'rgba(79,110,247,.3)':'var(--b1)'}"  >
+            <div style="font-size:1.4rem;min-width:32px;text-align:center">${medals[i]||'#'+(i+1)}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700">${am.name} ${am.name===U.name?'<span style="font-size:10px;color:var(--blue2)">(você)</span>':''}</div>
+              <div style="font-size:11px;color:var(--tx3)">${am.done} cursos concluídos · ${am.courses} matriculado</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:18px;font-weight:900;color:var(--amb)">${am.pts}pts</div>
+              <div style="font-size:10px;color:var(--tx3)">${am.pts>=300?'🥇 Expert':am.pts>=150?'🥈 Avançado':am.pts>=60?'🥉 Intermediário':'🌱 Iniciante'}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } catch(e){c.innerHTML='<div style="color:var(--rose)">Erro ao carregar ranking.</div>';}
+}
+
+// ============================================================
+// MANAGE COURSES (TAM)
+// ============================================================
+function renderManageCourses(){
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div style="font-size:20px;font-weight:900">⚙️ Gerenciar Cursos</div>
+    <button class="btn btn-primary" onclick="openCreateCourse()">+ Novo Curso</button>
+  </div>
+  <div id="courses-list"><div class="ldg"><div class="ld"></div> Carregando...</div></div>`;
+}
+
+async function loadManageCourses(){
+  const el=document.getElementById('courses-list');if(!el)return;
+  try {
+    ALL_COURSES=await apiFetch('/api/courses');
+    if(!ALL_COURSES.length){el.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--tx3)">Nenhum curso. Clique em "+ Novo Curso".</div>';return;}
+    el.innerHTML=ALL_COURSES.map(c=>`
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="width:50px;height:50px;border-radius:10px;background:linear-gradient(135deg,${courseColor(c.produto)});display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">${c.thumbnail_url||'📚'}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800">${c.title}</div>
+            <div style="font-size:12px;color:var(--tx3);margin-top:2px">${c.produto||'Geral'} · ${c.description?c.description.substring(0,80)+'...':''}</div>
+            <span class="badge ${c.status==='publicado'?'badge-teal':'badge-amb'}" style="margin-top:6px">${c.status==='publicado'?'✓ Publicado':'Rascunho'}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="editCourse('${c.id}')">✏️ Editar</button>
+            <button class="btn btn-ghost btn-sm" onclick="manageLessons('${c.id}')">📚 Lições</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">🗑</button>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch(e){el.innerHTML='<div style="color:var(--rose)">Erro ao carregar.</div>';}
+}
+
+function openCreateCourse(existing){
+  showModal(`
+    <div class="modal-title">${existing?'Editar Curso':'Novo Curso'} <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="flbl">Título do curso *</label><input class="inp" id="mc-title" value="${existing?.title||''}"></div>
+    <div class="fg"><label class="flbl">Emoji/Ícone (ex: 🎯)</label><input class="inp" id="mc-icon" value="${existing?.thumbnail_url||'📚'}" style="max-width:80px"></div>
+    <div class="fg"><label class="flbl">Produto Zoho</label>
+      <select class="sel" id="mc-prod">
+        ${['Zoho CRM','Zoho CRM Plus','Zoho Desk','Zoho Workplace','Zoho SalesIQ','Zoho Analytics','Zoho Flow','Zoho Creator','Zoho One','Geral'].map(p=>`<option${existing?.produto===p?' selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flbl">Descrição</label><textarea class="ta" id="mc-desc">${existing?.description||''}</textarea></div>
+    <div class="fg"><label class="flbl">Status</label>
+      <select class="sel" id="mc-status">
+        <option value="rascunho"${existing?.status==='rascunho'?' selected':''}>Rascunho</option>
+        <option value="publicado"${existing?.status==='publicado'?' selected':''}>Publicado</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" onclick="saveCourse('${existing?.id||''}')">💾 Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+}
+
+async function saveCourse(id){
+  const title=document.getElementById('mc-title')?.value.trim();
+  if(!title){alert('Informe o título.');return;}
+  const data={title,thumbnail_url:document.getElementById('mc-icon')?.value||'📚',produto:document.getElementById('mc-prod')?.value,description:document.getElementById('mc-desc')?.value,status:document.getElementById('mc-status')?.value,created_by:U.name};
+  try {
+    if(id){await apiFetch('/api/courses/'+id,{method:'PUT',body:data});}
+    else await apiFetch('/api/courses',{method:'POST',body:data});
+    closeModal();ALL_COURSES=await apiFetch('/api/courses');loadManageCourses();toast('Curso salvo!','teal');
+  } catch(e){alert('Erro: '+e.message);}
+}
+
+function editCourse(id){
+  const c=ALL_COURSES.find(x=>x.id===id);if(!c)return;
+  openCreateCourse(c);
+}
+
+async function deleteCourse(id){
+  if(!confirm('Remover curso e todo o conteúdo?'))return;
+  await apiFetch('/api/courses/'+id,{method:'DELETE'});
+  ALL_COURSES=await apiFetch('/api/courses');loadManageCourses();toast('Curso removido','rose');
+}
+
+// ============================================================
+// MANAGE LESSONS
+// ============================================================
+async function manageLessons(courseId){
+  const course=ALL_COURSES.find(c=>c.id===courseId);
+  const c=document.getElementById('content');
+  c.innerHTML='<div class="ldg"><div class="ld"></div> Carregando...</div>';
+
+  const [modules, lessons]=await Promise.all([
+    apiFetch('/api/modules?course_id='+courseId),
+    apiFetch('/api/lessons?course_id='+courseId)
+  ]);
+  courseModules=modules;courseLessons=lessons;currentCourse=course;
+
+  c.innerHTML=`
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" onclick="nav('manage-courses')">← Cursos</button>
+    <div style="font-size:18px;font-weight:900">${course?.title||'Curso'} — Lições</div>
+  </div>
+
+  <div class="grid2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-title">Módulos
+          <button class="btn btn-ghost btn-sm" onclick="addModule('${courseId}')">+ Módulo</button>
+        </div>
+        <div id="mod-list">
+          ${modules.length===0?'<div style="color:var(--tx3);font-size:13px">Nenhum módulo. Adicione ou crie lições diretas.</div>':
+            modules.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--s2);border-radius:8px;margin-bottom:6px">
+              <span style="flex:1;font-size:13px;font-weight:600">${m.title}</span>
+              <button class="btn btn-danger btn-sm" onclick="deleteModule('${m.id}','${courseId}')">✕</button>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">Lições (${lessons.length})
+          <button class="btn btn-primary btn-sm" onclick="addLesson('${courseId}')">+ Lição</button>
+        </div>
+        <div id="lesson-list">
+          ${lessons.length===0?'<div style="color:var(--tx3);font-size:13px">Nenhuma lição ainda.</div>':
+            lessons.map((l,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:9px;background:var(--s2);border-radius:8px;margin-bottom:6px;border:1px solid var(--b1)">
+              <span style="font-size:11px;color:var(--tx3);min-width:20px">${i+1}.</span>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600">${l.title}</div>
+                <div style="font-size:10px;color:var(--tx3)">${l.tipo} · ${l.points||10}pts</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="editLesson('${l.id}','${courseId}')">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteLesson('${l.id}','${courseId}')">✕</button>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="lesson-editor-panel">
+        <div style="color:var(--tx3);text-align:center;padding:24px">
+          Clique em "+ Lição" para adicionar ou em ✏️ para editar
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function addModule(courseId){
+  const title=prompt('Nome do módulo:');if(!title)return;
+  await apiFetch('/api/modules',{method:'POST',body:{course_id:courseId,title,ordem:courseModules.length}});
+  manageLessons(courseId);
+}
+
+async function deleteModule(id, courseId){
+  if(!confirm('Remover módulo e suas lições?'))return;
+  await apiFetch('/api/modules/'+id,{method:'DELETE'});
+  manageLessons(courseId);
+}
+
+async function deleteLesson(id, courseId){
+  if(!confirm('Remover lição?'))return;
+  await apiFetch('/api/lessons/'+id,{method:'DELETE'});
+  manageLessons(courseId);
+}
+
+function addLesson(courseId){ showLessonEditor(null, courseId); }
+function editLesson(lessonId, courseId){
+  const l=courseLessons.find(x=>x.id===lessonId);
+  showLessonEditor(l, courseId);
+}
+
+function showLessonEditor(lesson, courseId){
+  const panel=document.getElementById('lesson-editor-panel');if(!panel)return;
+  panel.innerHTML=`
+    <div class="card-title">${lesson?'Editar Lição':'Nova Lição'}</div>
+    <div class="fg"><label class="flbl">Título *</label><input class="inp" id="le-title" value="${lesson?.title||''}"></div>
+    <div class="fg"><label class="flbl">Tipo</label>
+      <select class="sel" id="le-tipo" onchange="toggleLessonFields()">
+        <option value="texto"${lesson?.tipo==='texto'?' selected':''}>📝 Texto/Leitura</option>
+        <option value="video"${lesson?.tipo==='video'?' selected':''}>🎥 Vídeo</option>
+        <option value="quiz"${lesson?.tipo==='quiz'?' selected':''}>🎮 Quiz</option>
+        <option value="tarefa"${lesson?.tipo==='tarefa'?' selected':''}>✅ Tarefa</option>
+        <option value="dinamica"${lesson?.tipo==='dinamica'?' selected':''}>🎭 Dinâmica</option>
+        <option value="link"${lesson?.tipo==='link'?' selected':''}>🔗 Link externo</option>
+      </select>
+    </div>
+    <div class="fg" id="le-url-fg"><label class="flbl">URL do vídeo ou link</label><input class="inp" id="le-url" value="${lesson?.video_url||''}" placeholder="https://youtube.com/..."></div>
+    <div class="fg"><label class="flbl">Conteúdo / Descrição</label><textarea class="ta" id="le-content" style="min-height:100px">${lesson?.content||''}</textarea></div>
+    <div class="fg"><label class="flbl">Módulo (opcional)</label>
+      <select class="sel" id="le-mod">
+        <option value="">Sem módulo</option>
+        ${courseModules.map(m=>`<option value="${m.id}"${lesson?.module_id===m.id?' selected':''}>${m.title}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fg"><label class="flbl">Duração (min)</label><input class="inp" type="number" id="le-dur" value="${lesson?.duration_min||5}"></div>
+      <div class="fg"><label class="flbl">Pontos</label><input class="inp" type="number" id="le-pts" value="${lesson?.points||10}"></div>
+    </div>
+    <div id="le-quiz-section" style="display:none">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--blue2)">Perguntas do Quiz</div>
+      <div id="le-questions"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addQuizQuestion()">+ Pergunta</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="saveLesson('${lesson?.id||''}','${courseId}')">💾 Salvar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('lesson-editor-panel').innerHTML='<div style=&quot;color:var(--tx3);text-align:center;padding:24px&quot;>Clique em + Lição para adicionar</div>'">Cancelar</button>
+    </div>`;
+  toggleLessonFields();
+  // Load existing questions if quiz
+  if(lesson?.tipo==='quiz'&&lesson?.id){
+    loadQuizQuestions(lesson.id);
+  }
+}
+
+let localQuestions=[];
+async function loadQuizQuestions(lessonId){
+  localQuestions=await apiFetch('/api/questions?lesson_id='+lessonId).catch(()=>[]);
+  renderLocalQuestions();
+}
+function renderLocalQuestions(){
+  const el=document.getElementById('le-questions');if(!el)return;
+  el.innerHTML=localQuestions.map((q,i)=>`
+    <div style="background:var(--s3);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px">
+      <div style="font-weight:700;margin-bottom:4px">${i+1}. ${q.question}</div>
+      <div style="color:var(--teal)">✓ ${q.correct_answer}) ${q['option_'+q.correct_answer.toLowerCase()]||''}</div>
+      <button class="btn btn-danger btn-sm" style="margin-top:5px" onclick="removeQuestion(${i})">Remover</button>
+    </div>`).join('');
+}
+function removeQuestion(i){ localQuestions.splice(i,1); renderLocalQuestions(); }
+function addQuizQuestion(){
+  showModal(`
+    <div class="modal-title">Nova Pergunta <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <div class="fg"><label class="flbl">Pergunta *</label><input class="inp" id="qq-q" placeholder="Ex: Qual é o principal benefício do CRM Plus?"></div>
+    <div class="fg"><label class="flbl">A)</label><input class="inp" id="qq-a"></div>
+    <div class="fg"><label class="flbl">B)</label><input class="inp" id="qq-b"></div>
+    <div class="fg"><label class="flbl">C)</label><input class="inp" id="qq-c"></div>
+    <div class="fg"><label class="flbl">D) (opcional)</label><input class="inp" id="qq-d"></div>
+    <div class="fg"><label class="flbl">Resposta correta</label>
+      <select class="sel" id="qq-ans"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+    </div>
+    <div class="fg"><label class="flbl">Explicação (opcional)</label><input class="inp" id="qq-exp" placeholder="Por que essa é a resposta correta?"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="addQuestionToList()">Adicionar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+}
+function addQuestionToList(){
+  const q={question:document.getElementById('qq-q')?.value.trim(),option_a:document.getElementById('qq-a')?.value.trim(),option_b:document.getElementById('qq-b')?.value.trim(),option_c:document.getElementById('qq-c')?.value.trim(),option_d:document.getElementById('qq-d')?.value.trim(),correct_answer:document.getElementById('qq-ans')?.value,explanation:document.getElementById('qq-exp')?.value.trim(),points:10};
+  if(!q.question||!q.option_a||!q.option_b){alert('Preencha pelo menos a pergunta e as opções A e B.');return;}
+  localQuestions.push(q);renderLocalQuestions();closeModal();
+}
+
+function toggleLessonFields(){
+  const tipo=document.getElementById('le-tipo')?.value;
+  const urlFg=document.getElementById('le-url-fg');
+  const quizSec=document.getElementById('le-quiz-section');
+  if(urlFg)urlFg.style.display=(tipo==='video'||tipo==='link')?'block':'none';
+  if(quizSec)quizSec.style.display=tipo==='quiz'?'block':'none';
+}
+
+async function saveLesson(id, courseId){
+  const title=document.getElementById('le-title')?.value.trim();
+  if(!title){alert('Informe o título.');return;}
+  const data={title,tipo:document.getElementById('le-tipo')?.value,video_url:document.getElementById('le-url')?.value||null,content:document.getElementById('le-content')?.value||null,module_id:document.getElementById('le-mod')?.value||null,course_id:courseId,duration_min:parseInt(document.getElementById('le-dur')?.value)||5,points:parseInt(document.getElementById('le-pts')?.value)||10,ordem:courseLessons.length};
+  try {
+    let savedLesson;
+    if(id){savedLesson=await apiFetch('/api/lessons/'+id,{method:'PUT',body:data});}
+    else{savedLesson=await apiFetch('/api/lessons',{method:'POST',body:data});}
+    // Save quiz questions
+    const lessonId=savedLesson?.id||id;
+    if(data.tipo==='quiz'&&localQuestions.length){
+      for(const q of localQuestions.filter(q=>!q.id)){
+        await apiFetch('/api/questions',{method:'POST',body:{...q,lesson_id:lessonId}});
+      }
+    }
+    localQuestions=[];
+    manageLessons(courseId);toast('Lição salva!','teal');
+  } catch(e){alert('Erro: '+e.message);}
+}
+
+// ============================================================
+// TEAM PROGRESS (TAM)
+// ============================================================
+async function renderTeamProgress(){
+  const c=document.getElementById('content');
+  c.innerHTML='<div class="ldg"><div class="ld"></div> Carregando...</div>';
+  try {
+    const [allEnr, courses]=await Promise.all([
+      apiFetch('/api/enrollments'),
+      apiFetch('/api/courses')
+    ]);
+    // Group by AM
+    const byAM={};
+    allEnr.forEach(e=>{
+      if(!byAM[e.am_name])byAM[e.am_name]={name:e.am_name,pts:0,done:0,inProgress:0};
+      byAM[e.am_name].pts+=(e.total_points||0);
+      if(e.status==='concluido')byAM[e.am_name].done++;
+      else byAM[e.am_name].inProgress++;
+    });
+    const sorted=Object.values(byAM).sort((a,b)=>b.pts-a.pts);
+    c.innerHTML=`
+      <div style="font-size:20px;font-weight:900;margin-bottom:20px">👥 Progresso do Time</div>
+      <div class="grid3" style="margin-bottom:20px">
+        <div class="kpi"><div class="kpi-val" style="color:var(--blue2)">${sorted.length}</div><div class="kpi-lbl">AMs ativos</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--teal)">${allEnr.filter(e=>e.status==='concluido').length}</div><div class="kpi-lbl">Cursos concluídos</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--amb)">${allEnr.reduce((s,e)=>s+(e.total_points||0),0)}</div><div class="kpi-lbl">Pontos totais</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Desempenho por AM</div>
+        ${sorted.map((am,i)=>{
+          const pct=Math.min(Math.round(am.pts/300*100),100);
+          return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border-radius:10px;margin-bottom:8px;border:1px solid var(--b1)">
+            <div style="font-size:1.3rem;min-width:28px">${'🥇🥈🥉'.split('')[i]||'#'+(i+1)}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700">${am.name}</div>
+              <div class="pb" style="margin:5px 0"><div class="pf" style="width:${pct}%"></div></div>
+              <div style="font-size:11px;color:var(--tx3)">${am.done} concluídos · ${am.inProgress} em andamento</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:20px;font-weight:900;color:var(--amb)">${am.pts}pts</div>
+              <div style="font-size:10px;color:var(--tx3)">${am.pts>=300?'Expert':am.pts>=150?'Avançado':am.pts>=60?'Intermediário':'Iniciante'}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📊 Por Curso</div>
+        ${courses.filter(c=>c.status==='publicado').map(course=>{
+          const courseEnr=allEnr.filter(e=>e.course_id===course.id);
+          const done=courseEnr.filter(e=>e.status==='concluido').length;
+          const avg=courseEnr.length>0?Math.round(courseEnr.reduce((s,e)=>s+(e.progress_pct||0),0)/courseEnr.length):0;
+          return `<div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--s2);border-radius:8px;margin-bottom:6px">
+            <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,${courseColor(course.produto)});display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">${course.thumbnail_url||'📚'}</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700">${course.title}</div>
+              <div class="pb" style="margin:4px 0"><div class="pf" style="width:${avg}%"></div></div>
+              <div style="font-size:11px;color:var(--tx3)">${courseEnr.length} matriculados · ${done} concluídos · média ${avg}%</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch(e){c.innerHTML='<div style="color:var(--rose)">Erro: '+e.message+'</div>';}
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function mdRender(text){
+  if(!text)return '';
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$2</h2>'.replace('$2','$1'))
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^[\-\*] (.+)$/gm,'<div style="display:flex;gap:6px;padding:2px 0"><span style="color:var(--blue2)">▸</span><span>$1</span></div>')
+    .replace(/^(\d+)\. (.+)$/gm,'<div style="display:flex;gap:6px;padding:2px 0"><span style="color:var(--blue2);font-weight:700;min-width:16px">$1.</span><span>$2</span></div>')
+    .replace(/\n\n/g,'<p style="height:8px"></p>')
+    .replace(/\n/g,'<br>');
+}
+
+function toast(msg, type='teal'){
+  const t=document.createElement('div');
+  t.className='toast';
+  t.style.background=type==='teal'?'var(--teal)':type==='rose'?'var(--rose)':'var(--blue)';
+  t.style.color=type==='teal'?'#000':'#fff';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+function showModal(html){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.id='modal-bg';
+  bg.innerHTML=`<div class="modal">${html}</div>`;
+  bg.addEventListener('click',e=>{if(e.target===bg)closeModal();});
+  document.body.appendChild(bg);
+}
+function closeModal(){const m=document.getElementById('modal-bg');if(m)m.remove();}
+</script>
+</body>
+</html>

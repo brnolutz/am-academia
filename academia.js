@@ -304,6 +304,15 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // ACADEMY TASKS (via bridge data table proxy)
+    if (resource === 'academy-tasks') {
+      if (req.method === 'GET') {
+        const q = parsed.query.am ? 'am_name=eq.'+parsed.query.am+'&order=created_at.desc' : 'order=created_at.desc&limit=200';
+        const r = await sb('GET','academy_tasks',q);
+        return respond(200, r.data||[]);
+      }
+    }
+
     // BRIDGE DATA (for password auth)
     if (resource === 'data') {
       if (req.method === 'GET') {

@@ -165,6 +165,10 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
     <div class="sub">Zoho Brasil</div>
     <div class="spacer"></div>
     <div id="role-badge" class="badge badge-blue"></div>
+    <div style="position:relative;cursor:pointer" title="Notificações">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:16px">🔔</div>
+      <div id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--rose);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;align-items:center;justify-content:center">0</div>
+    </div>
     <div class="user-pill" onclick="logout()">
       <div class="av" id="av">BL</div>
       <span id="av-name" style="font-size:13px;font-weight:600">Bruno</span>
@@ -195,6 +199,25 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 
 <script>
 const API_URL = window.location.origin;
+
+// ============================================================
+// SSO — Auto-login from Bridge via URL token
+// ============================================================
+function checkSSOToken(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if(!token) return false;
+  try {
+    const data = JSON.parse(atob(decodeURIComponent(token)));
+    // Token valid for 1 hour
+    if(Date.now() - data.ts > 3600000) return false;
+    U = {name:data.name, email:data.email, role:data.role||'AM', id:data.id,
+         initials:data.name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()};
+    // Clean URL
+    window.history.replaceState({},'',window.location.pathname);
+    return true;
+  } catch(e){ return false; }
+}
 let U = { name:'', email:'', role:'AM', initials:'AM' };
 let ALL_COURSES = [];
 let MY_ENROLLMENTS = [];
@@ -203,6 +226,10 @@ let MY_PROGRESS = [];
 // ============================================================
 // AUTH
 // ============================================================
+// Check SSO token on page load
+window.addEventListener('DOMContentLoaded', () => {
+  if(checkSSOToken()) launch();
+});
 function showErr(msg){ const e=document.getElementById('auth-err');if(e){e.textContent=msg;e.style.display='block';} }
 function hideErr(){ const e=document.getElementById('auth-err');if(e)e.style.display='none'; }
 
@@ -319,6 +346,8 @@ async function launch(){
   }
   await loadData();
   nav('home');
+  setTimeout(loadNotifications, 1000);
+  setTimeout(checkBadges, 1500);
 }
 
 // ============================================================
@@ -355,7 +384,7 @@ function nav(page){
   const ni=document.getElementById('ni-'+page);if(ni)ni.classList.add('active');
   const c=document.getElementById('content');
   switch(page){
-    case 'home': c.innerHTML=renderHome();break;
+    case 'home': c.innerHTML=renderHome();setTimeout(checkBadges,500);break;
     case 'my-courses': c.innerHTML=renderMyCourses();break;
     case 'my-progress': c.innerHTML=renderMyProgress();break;
     case 'ranking': renderRanking();break;
@@ -403,6 +432,13 @@ function renderHome(){
       </div>`;
     }).join('')}
   </div>`:''}
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">🏅 Minhas Conquistas</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px" id="badges-grid">
+      ${renderBadges()}
+    </div>
+  </div>
 
   <div class="card">
     <div class="card-title">📚 Catálogo de Cursos
@@ -804,7 +840,10 @@ function renderManageCourses(){
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div style="font-size:20px;font-weight:900">⚙️ Gerenciar Cursos</div>
-    <button class="btn btn-primary" onclick="openCreateCourse()">+ Novo Curso</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="openAICreateCourse()">✨ Criar com IA</button>
+      <button class="btn btn-primary" onclick="openCreateCourse()">+ Novo Curso</button>
+    </div>
   </div>
   <div id="courses-list"><div class="ldg"><div class="ld"></div> Carregando...</div></div>`;
 }
@@ -1171,6 +1210,240 @@ function showModal(html){
   bg.addEventListener('click',e=>{if(e.target===bg)closeModal();});
   document.body.appendChild(bg);
 }
+// ============================================================
+// BADGES SYSTEM
+// ============================================================
+const BADGES = [
+  {id:'first_lesson', icon:'⭐', name:'Primeira Lição', desc:'Concluiu a primeira lição', condition:p=>p.totalLessons>=1},
+  {id:'first_course', icon:'🎓', name:'Primeiro Curso', desc:'Concluiu o primeiro curso', condition:p=>p.doneCourses>=1},
+  {id:'quiz_master', icon:'🎮', name:'Quiz Master', desc:'Acertou 10 questões', condition:p=>p.totalPts>=100},
+  {id:'dedicated', icon:'🔥', name:'Dedicado', desc:'Completou 5 lições', condition:p=>p.totalLessons>=5},
+  {id:'expert', icon:'🥇', name:'Expert', desc:'Atingiu 300 pontos', condition:p=>p.totalPts>=300},
+  {id:'champion', icon:'🏆', name:'Campeão', desc:'Concluiu 3 cursos', condition:p=>p.doneCourses>=3},
+];
+
+function checkBadges(){
+  const totalPts = MY_ENROLLMENTS.reduce((s,e)=>s+(e.total_points||0),0);
+  const doneCourses = MY_ENROLLMENTS.filter(e=>e.status==='concluido').length;
+  const totalLessons = MY_PROGRESS.filter(p=>p.done).length;
+  const earned = BADGES.filter(b=>b.condition({totalPts,doneCourses,totalLessons}));
+  // Show new badge notification
+  const stored = JSON.parse(localStorage.getItem('badges_'+U.name)||'[]');
+  const newBadges = earned.filter(b=>!stored.includes(b.id));
+  if(newBadges.length){
+    localStorage.setItem('badges_'+U.name, JSON.stringify([...stored,...newBadges.map(b=>b.id)]));
+    newBadges.forEach(b=>{
+      setTimeout(()=>{
+        const t=document.createElement('div');
+        t.style.cssText='position:fixed;top:70px;right:20px;background:linear-gradient(135deg,var(--amb),var(--rose));color:#000;padding:14px 20px;border-radius:14px;font-weight:800;z-index:9999;box-shadow:0 8px 32px rgba(246,169,28,.4);animation:slideIn .4s ease';
+        t.innerHTML='<div style="font-size:1.5rem;margin-bottom:4px">'+b.icon+'</div><div>Conquista desbloqueada!</div><div style="font-size:11px;font-weight:600">'+b.name+'</div>';
+        document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+      },500);
+    });
+  }
+  return earned;
+}
+
+function renderBadges(){
+  const totalPts=MY_ENROLLMENTS.reduce((s,e)=>s+(e.total_points||0),0);
+  const doneCourses=MY_ENROLLMENTS.filter(e=>e.status==='concluido').length;
+  const totalLessons=MY_PROGRESS.filter(p=>p.done).length;
+  const stored=JSON.parse(localStorage.getItem('badges_'+U.name)||'[]');
+  return BADGES.map(b=>{
+    const earned=b.condition({totalPts,doneCourses,totalLessons});
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${earned?'var(--adim)':'var(--s2)'};border-radius:10px;border:1px solid ${earned?'rgba(246,169,28,.3)':'var(--b1)'};opacity:${earned?1:.5}">
+      <div style="font-size:1.5rem">${b.icon}</div>
+      <div><div style="font-size:13px;font-weight:700">${b.name}</div><div style="font-size:11px;color:var(--tx3)">${b.desc}</div></div>
+      ${earned?'<span class="badge badge-amb" style="margin-left:auto">Conquistado</span>':''}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// CERTIFICATE
+// ============================================================
+function generateCertificate(courseId){
+  const course=ALL_COURSES.find(c=>c.id===courseId);
+  const enr=getEnrollment(courseId);
+  if(!enr||enr.status!=='concluido'){alert('Conclua o curso para gerar o certificado.');return;}
+  const date=enr.completed_at?new Date(enr.completed_at).toLocaleDateString('pt-BR'):new Date().toLocaleDateString('pt-BR');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Certificado</title>
+  <style>body{margin:0;background:#fff;font-family:Georgia,serif;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+  .cert{width:800px;padding:60px;border:8px solid #4f6ef7;border-radius:20px;text-align:center;position:relative;}
+  .cert::before{content:'';position:absolute;inset:12px;border:2px solid #4f6ef7;border-radius:14px;opacity:.3;}
+  h1{font-size:14px;text-transform:uppercase;letter-spacing:4px;color:#6b7499;margin-bottom:20px;}
+  h2{font-size:40px;font-weight:900;color:#0d0f1a;margin-bottom:10px;}
+  h3{font-size:18px;color:#4f6ef7;margin-bottom:30px;}
+  p{font-size:16px;color:#374151;line-height:1.8;}
+  .seal{font-size:60px;margin:20px 0;}
+  .footer{margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end;}
+  .sig{border-top:2px solid #374151;padding-top:8px;font-size:12px;color:#6b7499;}
+  @media print{body{background:#fff}}</style></head>
+  <body><div class="cert">
+    <h1>Certificado de Conclusão</h1>
+    <div class="seal">🏆</div>
+    <p>Certificamos que</p>
+    <h2>${U.name}</h2>
+    <h3>concluiu com êxito o curso</h3>
+    <p style="font-size:22px;font-weight:700;color:#0d0f1a;">${course?.title||'Curso'}</p>
+    <p style="margin-top:10px">${course?.produto||''} · ${enr.total_points||0} pontos</p>
+    <div class="footer">
+      <div class="sig">Data<br>${date}</div>
+      <div style="font-size:11px;color:#9aa3bc">Zoho Brasil<br>Academia AM</div>
+      <div class="sig">Instrutor<br>TAM Zoho Brasil</div>
+    </div>
+  </div></body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),500);
+}
+
+// ============================================================
+// AI COURSE GENERATION
+// ============================================================
+function openAICreateCourse(){
+  showModal(`
+    <div class="modal-title">✨ Criar Curso com IA <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--tx3);margin-bottom:14px">Descreva o que você quer ensinar. A IA vai criar a estrutura completa do curso — módulos, lições e quizzes.</p>
+    <div class="fg"><label class="flbl">Produto Zoho</label>
+      <select class="sel" id="ai-prod">
+        ${['Zoho CRM','Zoho CRM Plus','Zoho Desk','Zoho Workplace','Zoho SalesIQ','Zoho Analytics','Zoho Flow','Zoho Creator','Zoho One'].map(p=>`<option>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flbl">Objetivo do curso *</label>
+      <textarea class="ta" id="ai-desc" placeholder="Ex: Preparar os AMs para apresentar o Zoho CRM Plus para clientes que já usam CRM Standard. Foco em diferenciais de automação, relatórios avançados e integração com Desk."></textarea>
+    </div>
+    <div class="fg"><label class="flbl">Nível do time</label>
+      <select class="sel" id="ai-nivel">
+        <option>Iniciante</option><option>Intermediário</option><option>Avançado</option>
+      </select>
+    </div>
+    <div id="ai-gen-out" style="display:none;margin-top:12px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" id="ai-gen-btn" onclick="generateAICourse()">✨ Gerar estrutura do curso</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+}
+
+async function generateAICourse(){
+  const prod=document.getElementById('ai-prod')?.value||'Zoho CRM';
+  const desc=document.getElementById('ai-desc')?.value.trim();
+  const nivel=document.getElementById('ai-nivel')?.value||'Iniciante';
+  if(!desc){alert('Descreva o objetivo do curso.');return;}
+  const btn=document.getElementById('ai-gen-btn');
+  const out=document.getElementById('ai-gen-out');
+  if(btn){btn.textContent='Gerando...';btn.disabled=true;}
+  if(out){out.style.display='block';out.innerHTML='<div class="ldg"><div class="ld"></div> A IA está criando o curso...</div>';}
+
+  try {
+    const r=await fetch(API_URL+'/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'gpt-4o',max_tokens:2000,
+        messages:[{role:'user',content:`Crie a estrutura completa de um curso para AMs da Zoho Brasil.
+
+Produto: ${prod}
+Objetivo: ${desc}
+Nível: ${nivel}
+
+Responda SOMENTE em JSON válido, sem markdown, neste formato EXATO:
+{
+  "title": "título do curso",
+  "description": "descrição em 2 linhas",
+  "thumbnail": "emoji relacionado ao produto",
+  "modules": [
+    {
+      "title": "nome do módulo",
+      "lessons": [
+        {
+          "title": "nome da lição",
+          "tipo": "texto|video|quiz|tarefa",
+          "duration_min": 10,
+          "points": 15,
+          "content": "conteúdo da lição em markdown (para tipo texto/tarefa)",
+          "questions": [
+            {
+              "question": "pergunta",
+              "option_a": "opção A",
+              "option_b": "opção B", 
+              "option_c": "opção C",
+              "option_d": "opção D",
+              "correct_answer": "A",
+              "explanation": "explicação",
+              "points": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Crie 2-3 módulos com 2-3 lições cada. Inclua pelo menos 1 lição de quiz por módulo.
+O conteúdo deve ser específico para ${prod} e voltado para AMs que vão vender o produto.`}]})});
+    const data=await r.json();
+    const text=data.content?.[0]?.text||'';
+    // Parse JSON
+    const clean=text.replace(/```json|```/g,'').trim();
+    const course=JSON.parse(clean);
+    // Preview
+    if(out)out.innerHTML=`
+      <div style="background:var(--s3);border-radius:10px;padding:14px;font-size:13px">
+        <div style="font-size:15px;font-weight:800;margin-bottom:8px">${course.thumbnail} ${course.title}</div>
+        <div style="color:var(--tx3);margin-bottom:10px">${course.description}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--blue2);margin-bottom:6px">${course.modules?.length||0} módulos</div>
+        ${(course.modules||[]).map(m=>`<div style="margin-bottom:6px"><div style="font-weight:600">${m.title}</div>
+          ${(m.lessons||[]).map(l=>`<div style="font-size:11px;color:var(--tx3);padding-left:12px">• ${l.title} (${l.tipo})</div>`).join('')}
+        </div>`).join('')}
+        <button class="btn btn-primary" style="margin-top:10px;width:100%" onclick='saveAICourse(${JSON.stringify(JSON.stringify(course))})'>💾 Criar este curso</button>
+      </div>`;
+    window._aiCourse=course;
+  } catch(e){
+    if(out)out.innerHTML=`<div style="color:var(--rose)">Erro: ${e.message}</div>`;
+  }
+  if(btn){btn.textContent='✨ Gerar estrutura do curso';btn.disabled=false;}
+}
+
+async function saveAICourse(courseJson){
+  const course=typeof courseJson==='string'?JSON.parse(courseJson):window._aiCourse;
+  if(!course){alert('Nenhum curso para salvar.');return;}
+  try {
+    const prod=document.getElementById('ai-prod')?.value||'Zoho';
+    // Create course
+    const saved=await apiFetch('/api/courses',{method:'POST',body:{title:course.title,description:course.description,thumbnail_url:course.thumbnail,produto:prod,status:'rascunho',created_by:U.name}});
+    const courseId=saved?.id;
+    if(!courseId)throw new Error('Falha ao criar curso');
+    // Create modules and lessons
+    for(const mod of (course.modules||[])){
+      const savedMod=await apiFetch('/api/modules',{method:'POST',body:{course_id:courseId,title:mod.title,ordem:(course.modules||[]).indexOf(mod)}});
+      for(const lesson of (mod.lessons||[])){
+        const savedLesson=await apiFetch('/api/lessons',{method:'POST',body:{course_id:courseId,module_id:savedMod?.id,title:lesson.title,tipo:lesson.tipo||'texto',content:lesson.content||null,duration_min:lesson.duration_min||5,points:lesson.points||10,ordem:(mod.lessons||[]).indexOf(lesson)}});
+        // Save quiz questions
+        if(lesson.tipo==='quiz'&&lesson.questions?.length&&savedLesson?.id){
+          for(const q of lesson.questions){
+            await apiFetch('/api/questions',{method:'POST',body:{...q,lesson_id:savedLesson.id}});
+          }
+        }
+      }
+    }
+    closeModal();
+    ALL_COURSES=await apiFetch('/api/courses');
+    loadManageCourses();
+    toast('✅ Curso criado com IA! Revise e publique.','teal');
+  } catch(e){alert('Erro ao salvar curso: '+e.message);}
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+async function loadNotifications(){
+  try {
+    // Check for new tasks in academy_tasks
+    const tasks=await apiFetch('/api/academy-tasks?am='+encodeURIComponent(U.name)).catch(()=>[]);
+    const pendingTasks=tasks?tasks.filter(t=>!t.done):[];
+    const badge=document.getElementById('notif-badge');
+    if(badge){badge.textContent=pendingTasks.length;badge.style.display=pendingTasks.length?'flex':'none';}
+  } catch(e){}
+}
+
 function closeModal(){const m=document.getElementById('modal-bg');if(m)m.remove();}
 </script>
 </body>

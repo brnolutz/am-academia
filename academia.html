@@ -604,12 +604,20 @@ async function openLesson(lessonId){
 }
 
 function renderLessonContent(lesson, questions, isDone){
-  const typeIcons={'video':'🎥','quiz':'🎮','texto':'📝','tarefa':'✅','dinamica':'🎭','link':'🔗'};
+  const typeIcons={'video':'🎥','quiz':'🎮','texto':'📝','tarefa':'✅','dinamica':'🎭','link':'🔗','slides':'📊','pdf':'📄'};
 
   let body='';
   if(lesson.tipo==='video'&&lesson.video_url){
     const embedUrl=lesson.video_url.replace('watch?v=','embed/').replace('youtu.be/','www.youtube.com/embed/');
     body=`<iframe class="video-embed" src="${embedUrl}" allowfullscreen></iframe>`;
+    if(lesson.content)body+=`<div class="aitxt" style="margin-top:12px">${mdRender(lesson.content)}</div>`;
+  } else if(lesson.tipo==='slides'&&lesson.video_url){
+    const slidesUrl=lesson.video_url.includes('/pub')||lesson.video_url.includes('embed')?lesson.video_url:lesson.video_url.replace('/edit','').replace('/view','')+'?usp=sharing';
+    body=`<div style="position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:16px"><iframe src="${slidesUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:10px" allowfullscreen></iframe></div>`;
+    if(lesson.content)body+=`<div class="aitxt" style="margin-top:12px">${mdRender(lesson.content)}</div>`;
+  } else if(lesson.tipo==='pdf'&&lesson.video_url){
+    const pdfUrl=lesson.video_url.includes('drive.google.com')?lesson.video_url.replace('/view','/preview').replace('/edit','/preview'):'https://docs.google.com/viewer?url='+encodeURIComponent(lesson.video_url)+'&embedded=true';
+    body=`<div style="width:100%;height:500px;border-radius:10px;overflow:hidden;margin-bottom:16px;border:1px solid var(--b1)"><iframe src="${pdfUrl}" style="width:100%;height:100%;border:none" allowfullscreen></iframe></div><a href="${lesson.video_url}" target="_blank" class="btn btn-ghost btn-sm">📄 Abrir em nova aba</a>`;
     if(lesson.content)body+=`<div class="aitxt" style="margin-top:12px">${mdRender(lesson.content)}</div>`;
   } else if(lesson.tipo==='link'&&lesson.video_url){
     body=`<div style="padding:20px;background:var(--s3);border-radius:10px;text-align:center;margin-bottom:16px">
@@ -1012,14 +1020,20 @@ function showLessonEditor(lesson, courseId){
     <div class="fg"><label class="flbl">Tipo</label>
       <select class="sel" id="le-tipo" onchange="toggleLessonFields()">
         <option value="texto"${lesson?.tipo==='texto'?' selected':''}>📝 Texto/Leitura</option>
-        <option value="video"${lesson?.tipo==='video'?' selected':''}>🎥 Vídeo</option>
+        <option value="video"${lesson?.tipo==='video'?' selected':''}>🎥 Vídeo (YouTube)</option>
+        <option value="slides"${lesson?.tipo==='slides'?' selected':''}>📊 Apresentação (Slides)</option>
+        <option value="pdf"${lesson?.tipo==='pdf'?' selected':''}>📄 PDF / Documento</option>
         <option value="quiz"${lesson?.tipo==='quiz'?' selected':''}>🎮 Quiz</option>
         <option value="tarefa"${lesson?.tipo==='tarefa'?' selected':''}>✅ Tarefa</option>
         <option value="dinamica"${lesson?.tipo==='dinamica'?' selected':''}>🎭 Dinâmica</option>
         <option value="link"${lesson?.tipo==='link'?' selected':''}>🔗 Link externo</option>
       </select>
     </div>
-    <div class="fg" id="le-url-fg"><label class="flbl">URL do vídeo ou link</label><input class="inp" id="le-url" value="${lesson?.video_url||''}" placeholder="https://youtube.com/..."></div>
+    <div class="fg" id="le-url-fg">
+      <label class="flbl">URL <span id="le-url-hint" style="color:var(--tx3);font-weight:400;text-transform:none"></span></label>
+      <input class="inp" id="le-url" value="${lesson?.video_url||''}" placeholder="https://...">
+      <div id="le-url-tips" style="font-size:10px;color:var(--tx3);margin-top:4px;display:none"></div>
+    </div>
     <div class="fg"><label class="flbl">Conteúdo / Descrição</label><textarea class="ta" id="le-content" style="min-height:100px">${lesson?.content||''}</textarea></div>
     <div class="fg"><label class="flbl">Módulo (opcional)</label>
       <select class="sel" id="le-mod">
@@ -1089,8 +1103,19 @@ function toggleLessonFields(){
   const tipo=document.getElementById('le-tipo')?.value;
   const urlFg=document.getElementById('le-url-fg');
   const quizSec=document.getElementById('le-quiz-section');
-  if(urlFg)urlFg.style.display=(tipo==='video'||tipo==='link')?'block':'none';
+  const hint=document.getElementById('le-url-hint');
+  const tips=document.getElementById('le-url-tips');
+  const showUrl=['video','slides','pdf','link'].includes(tipo);
+  if(urlFg)urlFg.style.display=showUrl?'block':'none';
   if(quizSec)quizSec.style.display=tipo==='quiz'?'block':'none';
+  const tipMap={
+    video:'Cole o link do YouTube (ex: https://youtube.com/watch?v=...)',
+    slides:'Cole o link de compartilhamento do Google Slides ou Canva (modo embed)',
+    pdf:'Cole o link do Google Drive (Compartilhar → "Qualquer pessoa com o link") ou de um PDF online',
+    link:'Qualquer URL — artigo, help.zoho.com, documentação',
+  };
+  if(hint)hint.textContent=tipMap[tipo]?'— '+tipMap[tipo]:'';
+  if(tips){tips.style.display=tipo==='slides'?'block':'none';tips.textContent='Google Slides: Arquivo → Publicar na web → Incorporar → copie o src do iframe';}
 }
 
 async function saveLesson(id, courseId){
